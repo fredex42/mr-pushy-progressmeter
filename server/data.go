@@ -8,10 +8,20 @@ import (
 	"log"
 )
 
+const InProgress = "InProgress"
+const CompletedSuccess = "CompletedSuccess"
+const CompletedFailure = "CompletedFailure"
+
 type JobEntry struct {
 	JobId        uuid.UUID `json:"jobId"`
 	Timestamp    string    `json:"timestamp"`
 	UploadsCount int       `json:"uploadsCount"`
+	Status       string    `json:"status"`
+}
+
+type Counter struct {
+	Name  string `json:"name"`
+	Value int64  `json:"value"`
 }
 
 func findAvailableAddress(client *redis.Client) uuid.UUID {
@@ -33,6 +43,7 @@ func CreateNewJob(client *redis.Client, request NewJobRequest) (uuid.UUID, error
 		JobId:        jobId,
 		Timestamp:    request.Timestamp,
 		UploadsCount: request.UploadsCount,
+		Status:       InProgress,
 	}
 
 	jsonContent, _ := json.Marshal(&entry)
@@ -42,7 +53,19 @@ func CreateNewJob(client *redis.Client, request NewJobRequest) (uuid.UUID, error
 	return jobId, nil
 }
 
-func retrieveKey(client *redis.Client, jobKey string) (*JobEntry, error) {
+func SetJobStatus(client *redis.Client, jobId uuid.UUID, newStatus string) error {
+	currentJob, getErr := GetJob(client, jobId)
+
+	if getErr != nil {
+		return getErr
+	}
+
+	currentJob.Status = newStatus
+	jsonContent, _ := json.Marshal(&currentJob)
+	return client.Set(fmt.Sprintf("job:%s", jobId.String()), jsonContent, -1).Err()
+}
+
+func retrieveJobKey(client *redis.Client, jobKey string) (*JobEntry, error) {
 	result := client.Get(jobKey)
 
 	if result.Err() != nil {
@@ -67,9 +90,9 @@ func retrieveKey(client *redis.Client, jobKey string) (*JobEntry, error) {
 	return &entry, nil
 }
 
-func GetJob(client *redis.Client, jobId string) (*JobEntry, error) {
-	jobKey := fmt.Sprintf("job:%s", jobId)
-	return retrieveKey(client, jobKey)
+func GetJob(client *redis.Client, jobId uuid.UUID) (*JobEntry, error) {
+	jobKey := fmt.Sprintf("job:%s", jobId.String())
+	return retrieveJobKey(client, jobKey)
 }
 
 func ListJobs(client *redis.Client, limit int64) ([]*JobEntry, error) {
@@ -84,12 +107,48 @@ func ListJobs(client *redis.Client, limit int64) ([]*JobEntry, error) {
 	}
 
 	for ctr, keyString := range keys {
-		entryContent, retrieveErr := retrieveKey(client, keyString)
+		entryContent, retrieveErr := retrieveJobKey(client, keyString)
 		if retrieveErr != nil {
 			log.Printf("Could not retrieve item %d of %d with key %s: %s", ctr, len(keys), keyString, retrieveErr)
 			return rtn, err
 		}
 		rtn[ctr] = entryContent
+	}
+	return rtn, nil
+}
+
+func IncrementCounter(client *redis.Client, jobId uuid.UUID, counterName string) (int64, error) {
+	keyName := fmt.Sprintf("%s:%s", jobId.String(), counterName)
+	return client.Incr(keyName).Result()
+}
+
+func GetCounter(client *redis.Client, jobId uuid.UUID, counterName string) (int64, error) {
+	keyName := fmt.Sprintf("%s:%s", jobId.String(), counterName)
+	return client.Get(keyName).Int64()
+}
+
+func ListCounters(client *redis.Client, jobId uuid.UUID) ([]*Counter, error) {
+	var cursor uint64
+	keySearchTerm := fmt.Sprintf("%s:*", jobId.String())
+	keys, cursor, err := client.Scan(cursor, keySearchTerm, 100).Result()
+
+	rtn := make([]*Counter, len(keys))
+
+	if err != nil {
+		log.Printf("Could not scan database for counters: %s", err)
+		return rtn, err
+	}
+
+	for ctr, keyString := range keys {
+		getResult, getErr := client.Get(keyString).Int64()
+		if getErr != nil {
+			log.Printf("Could not get counter key %s (%d of %d): %s", keyString, ctr, len(keys), getErr)
+			return rtn, getErr
+		}
+		rtn[ctr] = &Counter{
+			Name:  keyString,
+			Value: getResult,
+		}
 	}
 	return rtn, nil
 }

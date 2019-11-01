@@ -2,10 +2,8 @@ package main
 
 import (
 	"github.com/go-redis/redis/v7"
-	"github.com/google/uuid"
 	"log"
 	"net/http"
-	"net/url"
 )
 
 type JobGetResponse struct {
@@ -18,33 +16,14 @@ type JobGetHandler struct {
 }
 
 func (h JobGetHandler) ServeHTTP(w http.ResponseWriter, request *http.Request) {
-	requestUri, uriParseErr := url.ParseRequestURI(request.RequestURI)
+	jobId, errorResponse := GetJobIdFromQuerystring(request.RequestURI)
 
-	if uriParseErr != nil {
-		log.Printf("Could not understand incoming request URI '%s': %s", request.RequestURI, uriParseErr)
-		response := GenericErrorResponse{
-			Status: "error",
-			Detail: "invalid URI",
-		}
-		WriteJsonContent(&response, w, 400)
+	if errorResponse != nil {
+		WriteJsonContent(errorResponse, w, 400)
 		return
 	}
 
-	queryParams := requestUri.Query()
-	jobIdString := queryParams.Get("jobId")
-
-	jobId, uuidParseErr := uuid.Parse(jobIdString)
-	if uuidParseErr != nil {
-		log.Printf("Could not parse job ID string '%s' into a UUID: %s", jobIdString, uuidParseErr)
-		response := GenericErrorResponse{
-			Status: "error",
-			Detail: "malformed UUID",
-		}
-		WriteJsonContent(&response, w, 400)
-		return
-	}
-
-	jobInfo, getErr := GetJob(h.redisClient, jobId.String())
+	jobInfo, getErr := GetJob(h.redisClient, *jobId)
 
 	if getErr != nil {
 		response := GenericErrorResponse{

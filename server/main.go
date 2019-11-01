@@ -7,12 +7,14 @@ import (
 )
 
 type MyHttpApp struct {
-	index       indexHandler
-	healthcheck HealthcheckHandler
-	jsbundle    indexHandler
-	createJob   JobCreateHandler
-	listJob     JobListHandler
-	getJob      JobGetHandler
+	index           indexHandler
+	healthcheck     HealthcheckHandler
+	jsbundle        indexHandler
+	createJob       JobCreateHandler
+	listJob         JobListHandler
+	getJob          JobGetHandler
+	setJobCompleted JobCompleteHandler
+	setJobFailed    JobFailureHandler
 }
 
 func SetupRedis(config *Config) (*redis.Client, error) {
@@ -62,6 +64,8 @@ func main() {
 	app.createJob.redisClient = redisClient
 	app.listJob.redisClient = redisClient
 	app.getJob.redisClient = redisClient
+	app.setJobCompleted.redisClient = redisClient
+	app.setJobFailed.redisClient = redisClient
 
 	/*
 		register each handler to the server
@@ -71,6 +75,8 @@ func main() {
 	http.Handle("/static/js/bundle.js", app.jsbundle)
 	http.Handle("/api/job/start", app.createJob)
 	http.Handle("/api/job/list", app.listJob)
+	http.Handle("/api/job/setcompleted", app.setJobCompleted)
+	http.Handle("/api/job/setfailed", app.setJobFailed)
 	http.Handle("/api/job", app.getJob)
 
 	/*
