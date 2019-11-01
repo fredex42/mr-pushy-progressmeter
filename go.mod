@@ -1,7 +1,7 @@
 module github.com/guardian/mr-pushy-progressmeter
 
 require (
-	github.com/go-redis/redis/v7 v7.0.0-beta.4 // indirect
+	github.com/go-redis/redis/v7 v7.0.0-beta.4
 	github.com/golang/protobuf v1.3.2 // indirect
 	github.com/onsi/ginkgo v1.10.3 // indirect
 	github.com/onsi/gomega v1.7.1 // indirect
@@ -13,4 +13,5 @@ require (
 	golang.org/x/tools v0.0.0-20191031220737-6d8f1af9ccc0 // indirect
 	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898 // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	gopkg.in/yaml.v2 v2.2.4
 )
