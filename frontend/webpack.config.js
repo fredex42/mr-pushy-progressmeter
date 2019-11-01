@@ -2,7 +2,7 @@ var webpack = require('webpack');
 var path = require('path');
 var TerserPlugin = require('terser-webpack-plugin');
 
-var BUILD_DIR = path.resolve(__dirname + "/..", 'public/js');
+var BUILD_DIR = path.resolve(__dirname + "/..", 'server/public/js');
 var APP_DIR = path.resolve(__dirname, 'app');
 
 var config = {

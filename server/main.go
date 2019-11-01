@@ -13,9 +13,9 @@ type MyHttpApp struct {
 func main() {
 	var app MyHttpApp
 
-	app.index.filePath = "../public/index.html"
+	app.index.filePath = "public/index.html"
 	app.index.contentType = "text/html"
-	app.jsbundle.filePath = "../public/js/bundle.js"
+	app.jsbundle.filePath = "public/js/bundle.js"
 	app.jsbundle.contentType = "application/javascript"
 
 	http.Handle("/", app.index)

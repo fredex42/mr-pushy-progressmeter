@@ -2,3 +2,4 @@ frontend/node_modules
 server/server
 .idea/
 public/js/bundle.js
+*.tar.gz
