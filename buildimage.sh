@@ -17,14 +17,14 @@ fi
 mkdir -p $BUILDPATH/tar/public
 cp -av $BASEPATH/server/public/     $BUILDPATH/tar/public/
 cp -v $BASEPATH/server/server       $BUILDPATH/tar
-
+cp -av $BASEPATH/server/config      $BUILDPATH/tar/config/
 cd $BUILDPATH/tar
 tar cv * | gzip > $BUILDPATH/servercontent.tar.gz
 
 echo Compression completed
 cp $BASEPATH/Dockerfile $BUILDPATH
 cd $BUILDPATH
-docker build . -t guardianmultimedia/mr-pushy-progressmeter
+docker build . -t guardianmultimedia/mr-pushy-progressmeter:DEV
 
 cd $BASEPATH
 rm -rf $BUILDPATH

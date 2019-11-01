@@ -38,7 +38,7 @@ func main() {
 		read in config and establish connection to persistence layer
 	*/
 	log.Printf("Reading config from serverconfig.yaml")
-	config, configReadErr := ReadConfig("serverconfig.yaml")
+	config, configReadErr := ReadConfig("config/serverconfig.yaml")
 	log.Print("Done.")
 
 	if configReadErr != nil {
