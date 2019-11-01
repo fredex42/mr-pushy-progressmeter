@@ -25,11 +25,7 @@ type JobCreateHandler struct {
 func (h JobCreateHandler) ServeHTTP(w http.ResponseWriter, request *http.Request) {
 	bodyContent, readErr := ioutil.ReadAll(request.Body)
 
-	if request.Method != "POST" {
-		log.Printf("JobCreateHandler got a %s request, expecting POST", request.Method)
-		w.Header().Add("Content-Type", "text/plain")
-		w.WriteHeader(405)
-		w.Write([]byte("Invalid method, expecting POST"))
+	if AssertHttpMethod(request, w, "POST") == false {
 		return
 	}
 
@@ -62,7 +58,7 @@ func (h JobCreateHandler) ServeHTTP(w http.ResponseWriter, request *http.Request
 		JobId:  string(textBytes),
 	}
 
-	writeErr := WriteJsonContent(&response, w)
+	writeErr := WriteJsonContent(&response, w, 200)
 
 	if writeErr != nil {
 		log.Printf("Could not write response: %s", writeErr)

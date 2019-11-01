@@ -10,6 +10,7 @@ type MyHttpApp struct {
 	index     indexHandler
 	jsbundle  indexHandler
 	createJob JobCreateHandler
+	listJob   JobListHandler
 }
 
 func SetupRedis(config *Config) (*redis.Client, error) {
@@ -50,10 +51,12 @@ func main() {
 	app.jsbundle.filePath = "public/js/bundle.js"
 	app.jsbundle.contentType = "application/javascript"
 	app.createJob.redisClient = redisClient
+	app.listJob.redisClient = redisClient
 
 	http.Handle("/", app.index)
 	http.Handle("/static/js/bundle.js", app.jsbundle)
 	http.Handle("/api/job/start", app.createJob)
+	http.Handle("/api/job/list", app.listJob)
 
 	log.Printf("Started HTTP server on port 9000.")
 	startServerErr := http.ListenAndServe(":9000", nil)
