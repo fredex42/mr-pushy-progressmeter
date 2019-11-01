@@ -12,6 +12,7 @@ type MyHttpApp struct {
 	jsbundle    indexHandler
 	createJob   JobCreateHandler
 	listJob     JobListHandler
+	getJob      JobGetHandler
 }
 
 func SetupRedis(config *Config) (*redis.Client, error) {
@@ -60,6 +61,7 @@ func main() {
 	app.jsbundle.contentType = "application/javascript"
 	app.createJob.redisClient = redisClient
 	app.listJob.redisClient = redisClient
+	app.getJob.redisClient = redisClient
 
 	/*
 		register each handler to the server
@@ -69,6 +71,7 @@ func main() {
 	http.Handle("/static/js/bundle.js", app.jsbundle)
 	http.Handle("/api/job/start", app.createJob)
 	http.Handle("/api/job/list", app.listJob)
+	http.Handle("/api/job", app.getJob)
 
 	/*
 		kick off the server
