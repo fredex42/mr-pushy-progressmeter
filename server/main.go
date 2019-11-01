@@ -7,10 +7,11 @@ import (
 )
 
 type MyHttpApp struct {
-	index     indexHandler
-	jsbundle  indexHandler
-	createJob JobCreateHandler
-	listJob   JobListHandler
+	index       indexHandler
+	healthcheck HealthcheckHandler
+	jsbundle    indexHandler
+	createJob   JobCreateHandler
+	listJob     JobListHandler
 }
 
 func SetupRedis(config *Config) (*redis.Client, error) {
@@ -33,6 +34,9 @@ func SetupRedis(config *Config) (*redis.Client, error) {
 func main() {
 	var app MyHttpApp
 
+	/*
+		read in config and establish connection to persistence layer
+	*/
 	log.Printf("Reading config from serverconfig.yaml")
 	config, configReadErr := ReadConfig("serverconfig.yaml")
 	log.Print("Done.")
@@ -46,18 +50,29 @@ func main() {
 		log.Fatal("Could not connect to redis")
 	}
 
+	/*
+		configure the elements that each handler requires
+	*/
 	app.index.filePath = "public/index.html"
 	app.index.contentType = "text/html"
+	app.healthcheck.redisClient = redisClient
 	app.jsbundle.filePath = "public/js/bundle.js"
 	app.jsbundle.contentType = "application/javascript"
 	app.createJob.redisClient = redisClient
 	app.listJob.redisClient = redisClient
 
+	/*
+		register each handler to the server
+	*/
 	http.Handle("/", app.index)
+	http.Handle("/healthcheck", app.healthcheck)
 	http.Handle("/static/js/bundle.js", app.jsbundle)
 	http.Handle("/api/job/start", app.createJob)
 	http.Handle("/api/job/list", app.listJob)
 
+	/*
+		kick off the server
+	*/
 	log.Printf("Started HTTP server on port 9000.")
 	startServerErr := http.ListenAndServe(":9000", nil)
 
