@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "build": "webpack -d",
-    "compile": "webpack -p",
+    "build": "webpack -p",
     "dev": "webpack -d --watch"
   },
   "jest": {
