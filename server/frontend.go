@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 )
@@ -11,11 +12,20 @@ import (
 type indexHandler struct {
 	handler http.Handler
 
-	filePath    string
-	contentType string
+	filePath       string
+	contentType    string
+	exactMatchPath string
 }
 
 func (h indexHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	requestUrl, _ := url.ParseRequestURI(r.RequestURI)
+
+	if h.exactMatchPath != "" && requestUrl.Path != h.exactMatchPath {
+		log.Printf("Requested URL %s did not match exactMatchPath %s for this controller", requestUrl.Path, h.exactMatchPath)
+		w.WriteHeader(404)
+		return
+	}
+
 	f, openErr := os.Open(h.filePath)
 
 	if openErr != nil {

@@ -13,6 +13,7 @@ Compile-time DI is performed in the main() function.
 type MyHttpApp struct {
 	index           indexHandler
 	healthcheck     HealthcheckHandler
+	static          StaticFilesHandler
 	jsbundle        indexHandler
 	css             indexHandler
 	createJob       JobCreateHandler
@@ -66,8 +67,11 @@ func main() {
 	*/
 	app.index.filePath = "public/index.html"
 	app.index.contentType = "text/html"
+	app.index.exactMatchPath = "/"
 	app.css.filePath = "public/css/main.css"
 	app.css.contentType = "text/css"
+	app.static.basePath = "public"
+	app.static.uriTrim = 2
 	app.healthcheck.redisClient = redisClient
 	app.jsbundle.filePath = "public/js/bundle.js"
 	app.jsbundle.contentType = "application/javascript"
@@ -86,6 +90,7 @@ func main() {
 	http.Handle("/healthcheck", app.healthcheck)
 	http.Handle("/static/css/main.css", app.css)
 	http.Handle("/static/js/bundle.js", app.jsbundle)
+	http.Handle("/static/", app.static)
 	http.Handle("/api/job/start", app.createJob)
 	http.Handle("/api/job/list", app.listJob)
 	http.Handle("/api/job/setcompleted", app.setJobCompleted)
