@@ -4,6 +4,7 @@ import (
 	"github.com/go-redis/redis/v7"
 	"log"
 	"net/http"
+	url2 "net/url"
 )
 
 type JobGetResponse struct {
@@ -16,6 +17,9 @@ type JobGetHandler struct {
 }
 
 func (h JobGetHandler) ServeHTTP(w http.ResponseWriter, request *http.Request) {
+	log.Printf("request URI is % from %s", request.RequestURI, request.RemoteAddr)
+	url, _ := url2.ParseRequestURI(request.RequestURI)
+	log.Printf("%s | %s", url.Path, url.RawQuery)
 	jobId, errorResponse := GetJobIdFromQuerystring(request.RequestURI)
 
 	if errorResponse != nil {

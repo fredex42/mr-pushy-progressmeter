@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"log"
@@ -36,22 +37,39 @@ func AssertHttpMethod(request *http.Request, w http.ResponseWriter, method strin
 }
 
 /**
-gets just the "JobID" parameter from the provided query string and returns it as a pointer to UUID
-if it does not exist or is not a valid UUID, a GenericErrorResponse object is returned that is suitable
-to be written directly to the outgoing response
+Breaks down the incoming request URI into a map of string->string
 */
-func GetJobIdFromQuerystring(incomingRequestUri string) (*uuid.UUID, *GenericErrorResponse) {
+func GetQueryParams(incomingRequestUri string) (*url.Values, error) {
 	requestUri, uriParseErr := url.ParseRequestURI(incomingRequestUri)
 
 	if uriParseErr != nil {
 		log.Printf("Could not understand incoming request URI '%s': %s", incomingRequestUri, uriParseErr)
-		return nil, &GenericErrorResponse{
-			Status: "error",
-			Detail: "invalid URI",
-		}
+		return nil, errors.New("Invalid URI")
 	}
 
-	queryParams := requestUri.Query()
+	rtn := requestUri.Query()
+	return &rtn, nil
+}
+
+/**
+gets just the "JobID" parameter from the provided query string and returns it as a pointer to UUID
+if it does not exist or is not a valid UUID, a GenericErrorResponse object is returned that is suitable
+to be written directly to the outgoing response.
+
+This is a convenience function that calls GetQueryParams and GetJobIdFromValues
+*/
+func GetJobIdFromQuerystring(incomingRequestUri string) (*uuid.UUID, *GenericErrorResponse) {
+	queryParams, err := GetQueryParams(incomingRequestUri)
+	if err != nil {
+		return nil, &GenericErrorResponse{
+			Status: "error",
+			Detail: err.Error(),
+		}
+	}
+	return GetJobIdFromValues(queryParams)
+}
+
+func GetJobIdFromValues(queryParams *url.Values) (*uuid.UUID, *GenericErrorResponse) {
 	jobIdString := queryParams.Get("jobId")
 
 	jobId, uuidParseErr := uuid.Parse(jobIdString)

@@ -3,3 +3,4 @@ server/server
 .idea/
 server/public/js/bundle.js
 *.tar.gz
+persistence/

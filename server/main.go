@@ -6,6 +6,10 @@ import (
 	"net/http"
 )
 
+/*
+This data structure represents the HTTP controllers for each action that the app can perform.
+Compile-time DI is performed in the main() function.
+*/
 type MyHttpApp struct {
 	index           indexHandler
 	healthcheck     HealthcheckHandler
@@ -16,6 +20,8 @@ type MyHttpApp struct {
 	getJob          JobGetHandler
 	setJobCompleted JobCompleteHandler
 	setJobFailed    JobFailureHandler
+
+	incrementCounter IncrementCounterHandler
 }
 
 func SetupRedis(config *Config) (*redis.Client, error) {
@@ -55,7 +61,8 @@ func main() {
 	}
 
 	/*
-		configure the elements that each handler requires
+		configure the elements that each handler requires,
+		wire in their dependencies
 	*/
 	app.index.filePath = "public/index.html"
 	app.index.contentType = "text/html"
@@ -69,10 +76,12 @@ func main() {
 	app.getJob.redisClient = redisClient
 	app.setJobCompleted.redisClient = redisClient
 	app.setJobFailed.redisClient = redisClient
+	app.incrementCounter.redisClient = redisClient
 
 	/*
 		register each handler to the server
 	*/
+	http.Handle("/default", http.NotFoundHandler())
 	http.Handle("/", app.index)
 	http.Handle("/healthcheck", app.healthcheck)
 	http.Handle("/static/css/main.css", app.css)
@@ -83,6 +92,7 @@ func main() {
 	http.Handle("/api/job/setfailed", app.setJobFailed)
 	http.Handle("/api/job", app.getJob)
 
+	http.Handle("/api/increment", app.incrementCounter)
 	/*
 		kick off the server
 	*/
