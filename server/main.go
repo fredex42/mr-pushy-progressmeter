@@ -10,6 +10,7 @@ type MyHttpApp struct {
 	index           indexHandler
 	healthcheck     HealthcheckHandler
 	jsbundle        indexHandler
+	css             indexHandler
 	createJob       JobCreateHandler
 	listJob         JobListHandler
 	getJob          JobGetHandler
@@ -58,6 +59,8 @@ func main() {
 	*/
 	app.index.filePath = "public/index.html"
 	app.index.contentType = "text/html"
+	app.css.filePath = "public/css/main.css"
+	app.css.contentType = "text/css"
 	app.healthcheck.redisClient = redisClient
 	app.jsbundle.filePath = "public/js/bundle.js"
 	app.jsbundle.contentType = "application/javascript"
@@ -72,6 +75,7 @@ func main() {
 	*/
 	http.Handle("/", app.index)
 	http.Handle("/healthcheck", app.healthcheck)
+	http.Handle("/static/css/main.css", app.css)
 	http.Handle("/static/js/bundle.js", app.jsbundle)
 	http.Handle("/api/job/start", app.createJob)
 	http.Handle("/api/job/list", app.listJob)

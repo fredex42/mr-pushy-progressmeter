@@ -48,7 +48,7 @@ func CreateNewJob(client *redis.Client, request NewJobRequest) (uuid.UUID, error
 
 	jsonContent, _ := json.Marshal(&entry)
 
-	client.Set(fmt.Sprintf("job:%s", jobId), jsonContent, -1)
+	client.Set(fmt.Sprintf("job:%s", jobId.String()), jsonContent, -1)
 
 	return jobId, nil
 }
