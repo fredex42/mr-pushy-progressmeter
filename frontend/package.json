@@ -59,7 +59,7 @@
     "babel-loader": "^8.0.5",
     "css-loader": "^1.0.0",
     "identity-obj-proxy": "^3.0.0",
-    "moment": "^2.20.1",
+    "moment": "^2.29.2",
     "raven-js": "^3.24.1",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
