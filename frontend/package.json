@@ -45,7 +45,7 @@
     "jest-junit": "^4.0.0",
     "react-test-renderer": "^16.8.6",
     "sinon": "^2.3.7",
-    "snyk": "^1.236.1",
+    "snyk": "^1.996.0",
     "webpack-cli": "^3.2.3"
   },
   "dependencies": {
