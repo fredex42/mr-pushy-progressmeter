@@ -46,7 +46,7 @@
     "react-test-renderer": "^16.8.6",
     "sinon": "^2.3.7",
     "snyk": "^1.236.1",
-    "webpack-cli": "^3.2.3"
+    "webpack-cli": "^3.3.12"
   },
   "dependencies": {
     "@babel/cli": "^7.2.3",
